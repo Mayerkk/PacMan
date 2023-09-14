@@ -1,2 +1,2 @@
 # PACMAN
-juego de pacman c:
+juego de pacman c:XD
