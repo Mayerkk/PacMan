@@ -1,9 +1,11 @@
 const canvas = document.querySelector("canvas");
 const c = canvas.getContext("2d");
 const scoreElm = document.querySelector("#scoreElm");
+let tiempoJuego = 0;
 console.log("scoreElm");
 canvas.width = innerWidth;
 canvas.height = innerHeight;
+
 class Perimetro {
     static width = 40;
     static height = 40;
@@ -14,28 +16,62 @@ class Perimetro {
         this.image = image;
     }
     draw() {
-        //c.fillStyle = "blue";
-        //c.fillRect(this.position.x, this.position.y, this.width, this.height);
         c.drawImage(this.image, this.position.x, this.position.y);
     }
 }
+
 class Player {
     constructor({ position, velocity }) {
         this.position = position;
         this.velocity = velocity;
         this.radius = 15;
+        this.radians = 0.75;
+        this.openRate = 0.12;
+        this.rotation = 0;
     }
     draw() {
+        c.save();
+        c.translate(this.position.x, this.position.y);
+        c.rotate(this.rotation);
+        c.translate(-this.position.x, -this.position.y);
         c.beginPath();
-        c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+        c.arc(this.position.x, this.position.y, this.radius, this.radians, Math.PI * 2 - 0.75);
+        c.lineTo(this.position.x, this.position.y);
         c.fillStyle = "yellow";
         c.fill();
         c.closePath();
+        c.restore();
     }
     update() {
         this.draw();
         this.position.x += this.velocity.x;
         this.position.y += this.velocity.y;
+        if (this.radians < 0 || this.radians > 0.75) this.openRate = -this.openRate;
+        this.radians += this.openRate;
+    }
+}
+
+class Fantasma {
+    constructor({ position, speed, color = "red",image }) {
+        this.position = position;
+        this.speed = speed;
+        this.radius = 15;
+        this.scared = false;
+        this.color = color;
+        this.image = image; 
+    }
+
+    draw() {
+        c.drawImage(this.image, this.position.x - this.radius, this.position.y - this.radius, this.radius * 2, this.radius * 2);
+    }
+
+    update(playerPosition) {
+        const dx = playerPosition.x - this.position.x;
+        const dy = playerPosition.y - this.position.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        this.position.x += (dx / distance) * this.speed;
+        this.position.y += (dy / distance) * this.speed;
     }
 }
 
@@ -52,8 +88,39 @@ class Moneda {
         c.closePath();
     }
 }
+class PowerUp {
+    constructor({ position }) {
+        this.position = position;
+        this.radius = 7;
+    }
+    draw() {
+        c.beginPath();
+        c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+        c.fillStyle = "white";
+        c.fill();
+        c.closePath();
+    }
+}
+const imagenFantasma = createImage("./img/fantasmita.png");
+const backgroundMusic = document.getElementById("backgroundMusic");
+backgroundMusic.src = "BEAT DO PAC MAN 2K22 (Slowed + Reverb)_(Bass Boosted)🔊.mp3";
+
+
+// Para reproducir la música de fondo
+function playBackgroundMusic() {
+    backgroundMusic.play();
+}
+
+// Para detener la música de fondo
+function stopBackgroundMusic() {
+    backgroundMusic.pause();
+}
+backgroundMusic.volume = 0.5;
 const monedas = [];
 const perimetros = [];
+const powerUps = [];
+const fantasmas = []; // Agregamos una matriz para los fantasmas
+
 const player = new Player({
     position: {
         x: Perimetro.width + Perimetro.width / 2,
@@ -64,37 +131,43 @@ const player = new Player({
         y: 0,
     },
 });
+
 const keys = {
-    w: {
-        pressed: false,
-    },
-    a: {
-        pressed: false,
-    },
-    s: {
-        pressed: false,
-    },
-    d: {
-        pressed: false,
-    },
+    w: { pressed: false },
+    a: { pressed: false },
+    s: { pressed: false },
+    d: { pressed: false },
 };
+
 let lastKey = "";
 let score = 0;
+
 const map = [
     ["1", "-", "-", "-", "-", "-", "-", "-", "-", "-", "2"],
     ["|", ".", ".", ".", ".", ".", ".", ".", ".", ".", "|"],
     ["|", ".", "b", ".", "[", "7", "]", ".", "b", ".", "|"],
     ["|", ".", ".", ".", ".", "_", ".", ".", ".", ".", "|"],
     ["|", ".", "[", "]", ".", ".", ".", "[", "]", ".", "|"],
-    ["|", ".", ".", ".", ".", "^", ".", ".", ".", ".", "|"],
-    ["|", ".", "b", ".", "[", "+", "]", ".", "b", ".", "|"],
+    ["|", ".", ".", ".", ".", "^", ".", ".", ".", "F", "|"],
+    ["|", ".", "b", "p", "[", "+", "]", "p", "b", ".", "|"],
     ["|", ".", ".", ".", ".", "_", ".", ".", ".", ".", "|"],
-    ["|", ".", "[", "]", ".", ".", ".", "[", "]", ".", "|"],
+    ["|", "F", "[", "]", ".", ".", ".", "[", "]", ".", "|"],
     ["|", ".", ".", ".", ".", "^", ".", ".", ".", ".", "|"],
     ["|", ".", "b", ".", "[", "5", "]", ".", "b", ".", "|"],
-    ["|", ".", ".", ".", ".", ".", ".", ".", ".", "p", "|"],
+    ["|", "p", ".", ".", ".", ".", ".", ".", ".", "p", "|"],
     ["4", "-", "-", "-", "-", "-", "-", "-", "-", "-", "3"],
 ];
+function mostrarTiempo() {
+    const segundos = Math.floor(tiempoJuego);
+    const timerElement = document.getElementById("timer");
+    timerElement.textContent = `Tiempo: ${segundos} s`;
+}
+function iniciarTemporizador() {
+    setInterval(() => {
+        tiempoJuego += 1; // Incrementar el tiempo en 1 segundo
+        mostrarTiempo(); // Actualizar la visualización del tiempo
+    }, 1000); // Llamar a la función cada 1000 ms (1 segundo)
+}
 function createImage(src) {
     const image = new Image();
     image.src = src;
@@ -290,9 +363,41 @@ map.forEach((row, i) => {
                     })
                 );
                 break;
+            case "p":
+                powerUps.push(
+                    new PowerUp({
+                        position: {
+                            x: Perimetro.width * j + Perimetro.width / 2,
+                            y: Perimetro.height * i + Perimetro.height / 2,
+                        },
+                    })
+                );
+                break;
+            case "F": // Agregamos el símbolo "F" para representar a los fantasmas en el mapa
+                fantasmas.push(
+                    new Fantasma({
+                        position: {
+                            x: Perimetro.width * j + Perimetro.width / 2,
+                            y: Perimetro.height * i + Perimetro.height / 2,
+                        },
+                        speed: 2, // Puedes ajustar la velocidad de los fantasmas según tus necesidades.
+                        image: imagenFantasma,
+                    })
+                );
+                break;
         }
     });
 });
+function hasGhostTouchedPlayer(player, ghosts) {
+    for (let i = 0; i < ghosts.length; i++) {
+        const ghost = ghosts[i];
+        const distance = Math.hypot(ghost.position.x - player.position.x, ghost.position.y - player.position.y);
+        if (distance < ghost.radius + player.radius) {
+            return true;
+        }
+    }
+    return false;
+}
 function colisionCirculoReactangulo({ circulo, rectangulo }) {
     return (
         player.position.y - player.radius + player.velocity.y <= rectangulo.position.y + rectangulo.height &&
@@ -301,6 +406,7 @@ function colisionCirculoReactangulo({ circulo, rectangulo }) {
         player.position.x - player.radius + player.velocity.x <= rectangulo.position.x + rectangulo.width
     );
 }
+
 function animacion() {
     requestAnimationFrame(animacion);
     c.clearRect(0, 0, canvas.width, canvas.height);
@@ -389,7 +495,27 @@ function animacion() {
             }
         }
     }
-    for (let i = monedas.length - 1; 0 < i; i--) {
+    if (monedas.length === 0) {
+        console.log("you win");
+        cancelAnimationFrame();
+    }
+    for (let i = powerUps.length - 1; 0 <= i; i--) {
+        const powerUp = powerUps[i];
+        powerUp.draw();
+        if (Math.hypot(powerUp.position.x - player.position.x, powerUp.position.y - player.position.y) < powerUp.radius + player.radius) {
+            powerUps.splice(i, 1);
+
+            fantasmas.forEach((fantasma) => {
+                fantasma.scared = true;
+
+                setTimeout(() => {
+                    fantasma.scared = false;
+                }, 5000);
+            });
+        }
+    }
+
+    for (let i = monedas.length - 1; 0 <= i; i--) {
         const moneda = monedas[i];
         moneda.draw();
         if (Math.hypot(moneda.position.x - player.position.x, moneda.position.y - player.position.y) < moneda.radius + player.radius) {
@@ -414,11 +540,28 @@ function animacion() {
         }
     });
 
+    // Actualizamos y dibujamos los fantasmas
+    fantasmas.forEach((fantasma) => {
+        fantasma.update(player.position);
+        fantasma.draw();
+    });
+    if (hasGhostTouchedPlayer(player, fantasmas)) {
+        console.log("¡Un fantasma te ha atrapado!");
+        cancelAnimationFrame(animacion); // Detener la animación
+        return;
+    }
+
     player.update();
-    //player.velocity.y=0
-    //player.velocity.x=0
+    if (player.velocity.x > 0) player.rotation = 0;
+    else if (player.velocity.x < 0) player.rotation = Math.PI;
+    else if (player.velocity.y > 0) player.rotation = Math.PI / 2;
+    else if (player.velocity.y < 0) player.rotation = Math.PI * 1.5;
 }
+playBackgroundMusic();
+iniciarTemporizador();
 animacion();
+
+
 addEventListener("keydown", ({ key }) => {
     switch (key) {
         case "w":
@@ -428,22 +571,18 @@ addEventListener("keydown", ({ key }) => {
         case "a":
             keys.a.pressed = true;
             lastKey = "a";
-
             break;
         case "s":
             keys.s.pressed = true;
             lastKey = "s";
-
             break;
         case "d":
             keys.d.pressed = true;
             lastKey = "d";
-
             break;
     }
-    console.log(keys.d.pressed);
-    console.log(keys.s.pressed);
 });
+
 addEventListener("keyup", ({ key }) => {
     switch (key) {
         case "w":
@@ -459,6 +598,4 @@ addEventListener("keyup", ({ key }) => {
             keys.d.pressed = false;
             break;
     }
-    console.log(keys.d.pressed);
-    console.log(keys.s.pressed);
 });
