@@ -88,6 +88,90 @@ class Moneda {
         c.closePath();
     }
 }
+class Fruta {
+    constructor({ position, image }) {
+        this.position = position;
+        this.image = image;
+        this.width = 40; // Ancho de la fruta
+        this.height = 40; // Altura de la fruta
+    }
+
+    draw() {
+        c.drawImage(this.image, this.position.x - this.width / 2, this.position.y - this.height / 2, this.width, this.height);
+    }
+}
+
+const imagenFruta = createImage("cereza.png"); 
+const frutas = [];
+
+class Fresa {
+    constructor({ position, image }) {
+        this.position = position;
+        this.image = image;
+        this.width = 40; 
+        this.height = 40; 
+    }
+
+    draw() {
+        c.drawImage(this.image, this.position.x - this.width / 2, this.position.y - this.height / 2, this.width, this.height);
+    }
+}
+const imagenFresa = createImage("fresa.png"); 
+const fresas = [];
+class Uva {
+    constructor({ position, image }) {
+        this.position = position;
+        this.image = image;
+        this.width = 40; 
+        this.height = 40; 
+    }
+
+    draw() {
+        c.drawImage(this.image, this.position.x - this.width / 2, this.position.y - this.height / 2, this.width, this.height);
+    }
+}
+const imagenUva = createImage("uva.png"); 
+const uvas = [];
+
+class Manzana {
+    constructor({ position, image }) {
+        this.position = position;
+        this.image = image;
+        this.width = 40; 
+        this.height = 40; 
+    }
+
+    draw() {
+        c.drawImage(this.image, this.position.x - this.width / 2, this.position.y - this.height / 2, this.width, this.height);
+    }
+}
+const imagenManzana = createImage("manzana.png"); 
+const manzanas = [];
+
+class Naranja {
+    constructor({ position, image }) {
+        this.position = position;
+        this.image = image;
+        this.width = 40; 
+        this.height = 40; 
+    }
+
+    draw() {
+        c.drawImage(this.image, this.position.x - this.width / 2, this.position.y - this.height / 2, this.width, this.height);
+    }
+}
+const imagenNaranja = createImage("naranja.png"); 
+const naranjas = [];
+
+
+
+
+
+
+
+
+
+
 class PowerUp {
     constructor({ position }) {
         this.position = position;
@@ -144,12 +228,12 @@ let score = 0;
 
 const map = [
     ["1", "-", "-", "-", "-", "-", "-", "-", "-", "-", "2"],
-    ["|", ".", ".", ".", ".", ".", ".", ".", ".", ".", "|"],
+    ["|", ".", ".", ".", ".", ".", ".", ".", ".", "0", "|"],
     ["|", ".", "b", ".", "[", "7", "]", ".", "b", ".", "|"],
     ["|", ".", ".", ".", ".", "_", ".", ".", ".", ".", "|"],
-    ["|", ".", "[", "]", ".", ".", ".", "[", "]", ".", "|"],
+    ["|", ".", "[", "]", ".", "U", ".", "[", "]", ".", "|"],
     ["|", ".", ".", ".", ".", "^", ".", ".", ".", "F", "|"],
-    ["|", ".", "b", "p", "[", "+", "]", "p", "b", ".", "|"],
+    ["|", "N", "b", "p", "[", "+", "]", "p", "b", ".", "|"],
     ["|", ".", ".", ".", ".", "_", ".", ".", ".", ".", "|"],
     ["|", "F", "[", "]", ".", ".", ".", "[", "]", ".", "|"],
     ["|", ".", ".", ".", ".", "^", ".", ".", ".", ".", "|"],
@@ -157,13 +241,15 @@ const map = [
     ["|", "p", ".", ".", ".", ".", ".", ".", ".", "p", "|"],
     ["|", ".", ".", ".", ".", ".", ".", ".", ".", ".", "|"],
     ["|", ".", ".", ".", ".", "^", ".", ".", ".", "F", "|"],
-    ["|", ".", "b", "p", "[", "+", "]", "p", "b", ".", "|"],
+    ["|", "9", "b", "p", "[", "+", "]", "p", "b", ".", "|"],
     ["|", ".", ".", ".", ".", "_", ".", ".", ".", ".", "|"],
     ["|", "F", "[", "]", ".", ".", ".", "[", "]", ".", "|"],
-    ["|", ".", ".", ".", ".", "^", ".", ".", ".", ".", "|"],
+    ["|", ".", ".", ".", ".", "^", ".", ".", ".", "M", "|"],
     ["|", ".", "b", ".", "[", "5", "]", ".", "b", ".", "|"],
     ["|", "p", ".", ".", ".", ".", ".", ".", ".", "p", "|"],
     ["4", "-", "-", "-", "-", "-", "-", "-", "-", "-", "3"],
+    
+    
 ];
 function mostrarTiempo() {
     const segundos = Math.floor(tiempoJuego);
@@ -381,15 +467,70 @@ map.forEach((row, i) => {
                     })
                 );
                 break;
-            case "F": // Agregamos el símbolo "F" para representar a los fantasmas en el mapa
+            case "F": 
                 fantasmas.push(
                     new Fantasma({
                         position: {
                             x: Perimetro.width * j + Perimetro.width / 2,
                             y: Perimetro.height * i + Perimetro.height / 2,
                         },
-                        speed: 2, // Puedes ajustar la velocidad de los fantasmas según tus necesidades.
+                        speed: 2,
                         image: imagenFantasma,
+                    })
+                );
+                break;
+                case "0": 
+                frutas.push(
+                    new Fruta({
+                        position: {
+                            x: Perimetro.width * j + Perimetro.width / 2,
+                            y: Perimetro.height * i + Perimetro.height / 2,
+                        },
+                        image: imagenFruta, 
+                    })
+                );
+                break;
+                case "9": 
+                fresas.push(
+                    new Fresa({
+                        position: {
+                            x: Perimetro.width * j + Perimetro.width / 2,
+                            y: Perimetro.height * i + Perimetro.height / 2,
+                        },
+                        image: imagenFresa,
+                    })
+                );
+                break;
+                case "U": // Agregamos el símbolo "U" para representar uvas en el mapa
+                uvas.push(
+                    new Uva({
+                        position: {
+                            x: Perimetro.width * j + Perimetro.width / 2,
+                            y: Perimetro.height * i + Perimetro.height / 2,
+                        },
+                        image: imagenUva, 
+                    })
+                );
+                break;
+                case "M": 
+                manzanas.push(
+                    new Manzana({
+                        position: {
+                            x: Perimetro.width * j + Perimetro.width / 2,
+                            y: Perimetro.height * i + Perimetro.height / 2,
+                        },
+                        image: imagenManzana, 
+                    })
+                );
+                break;
+                case "N": 
+                naranjas.push(
+                    new Naranja({
+                        position: {
+                            x: Perimetro.width * j + Perimetro.width / 2,
+                            y: Perimetro.height * i + Perimetro.height / 2,
+                        },
+                        image: imagenNaranja,
                     })
                 );
                 break;
@@ -564,6 +705,61 @@ function animacion() {
     else if (player.velocity.x < 0) player.rotation = Math.PI;
     else if (player.velocity.y > 0) player.rotation = Math.PI / 2;
     else if (player.velocity.y < 0) player.rotation = Math.PI * 1.5;
+
+    for (let i = frutas.length - 1; 0 <= i; i--) {
+    const fruta = frutas[i];
+    fruta.draw();
+    if (Math.hypot(fruta.position.x - player.position.x, fruta.position.y - player.position.y) < fruta.width / 2 + player.radius) {
+        console.log("¡Has recolectado una fruta!");
+        frutas.splice(i, 1);
+         score += 20; 
+         scoreElm.innerHTML = score;
+    }
+}
+for (let i = fresas.length - 1; 0 <= i; i--) {
+    const fresa = fresas[i];
+    fresa.draw();
+    if (Math.hypot(fresa.position.x - player.position.x, fresa.position.y - player.position.y) < fresa.width / 2 + player.radius) {
+        console.log("¡Has recolectado una fresa!");
+        fresas.splice(i, 1);
+        score += 20; 
+         scoreElm.innerHTML = score;
+    }
+}
+for (let i = uvas.length - 1; 0 <= i; i--) {
+    const uva = uvas[i];
+    uva.draw();
+    if (Math.hypot(uva.position.x - player.position.x, uva.position.y - player.position.y) < uva.width / 2 + player.radius) {
+        console.log("¡Has recolectado una uva!");
+        uvas.splice(i, 1);
+        
+         score += 20; 
+         scoreElm.innerHTML = score;
+    }
+}
+for (let i = manzanas.length - 1; 0 <= i; i--) {
+    const manzana = manzanas[i];
+    manzana.draw();
+    if (Math.hypot(manzana.position.x - player.position.x, manzana.position.y - player.position.y) < manzana.width / 2 + player.radius) {
+        console.log("¡Has recolectado una manzana!");
+        manzanas.splice(i, 1);
+         score += 5; 
+         scoreElm.innerHTML = score;
+    }
+}
+for (let i = naranjas.length - 1; 0 <= i; i--) {
+    const naranja = naranjas[i];
+    naranja.draw();
+    if (Math.hypot(naranja.position.x - player.position.x, naranja.position.y - player.position.y) < naranja.width / 2 + player.radius) {
+        console.log("¡Has recolectado una naranja!");
+        naranjas.splice(i, 1);
+         score += 5; 
+         scoreElm.innerHTML = score;
+    }
+}
+
+
+
 }
 playBackgroundMusic();
 iniciarTemporizador();
